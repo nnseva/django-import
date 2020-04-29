@@ -3,13 +3,14 @@
 The [Django Import](https://github.com/nnseva/django-import) package provides a rich Django models import feature for the admin interface as well as using any API.
 
 The following options are present:
-    - synchronous as well as asynchronous (using [Celery](http://www.celeryproject.org/)) import procedure depending on the project-wide settings
-    - customizing project-wide storage settings to store imported files
-    - import any model present in the project
-    - restricting project-wide list of models available to import
-    - wide range of input file formats with online autodetecting feature (with help of [tablib](https://tablib.readthedocs.io/) package)
-    - online customizing column-to-field reflection
-    - wide and extendable set of conversion and checking functions for imported values
+
+- synchronous as well as asynchronous (using [Celery](http://www.celeryproject.org/)) import procedure depending on the project-wide settings
+- customizing project-wide storage settings to store imported files
+- import any model present in the project
+- restricting project-wide list of models available to import
+- wide range of input file formats with online autodetecting feature (with help of [tablib](https://tablib.readthedocs.io/) package)
+- online customizing column-to-field reflection
+- wide and extendable set of conversion and checking functions for imported values
 
 The idea of the package has been *inspired* by the [django-csvimport](https://github.com/edcrewe/django-csvimport) package which unfortunately was
 too hard to modify because of very long history.
@@ -71,10 +72,10 @@ Every time when you create or update the `ImportJob`, the import procedure is st
 
 If you don't provide any options for the `ImportJob`, the import procedure will:
 
-    - try to autodetect proper format and file opening flags (`rb` or `rt`)
-    - import all data and headers from the file
-    - search columns in the input file corresponding to the field names
-    - create model instances filling the instance field values by the data found in the correspondent input data columns
+- try to autodetect proper format and file opening flags (`rb` or `rt`)
+- import all data and headers from the file
+- search columns in the input file corresponding to the field names
+- create model instances filling the instance field values by the data found in the correspondent input data columns
 
 Every of these steps is customizable.
 
@@ -151,9 +152,9 @@ from the `headers` option described below.
 }
 ```
 
-This `headers` option option overrides header names. Note that number of headers in the option should correspond to number of columns in the input file.
+This `headers` option overrides header names. Note that number of headers in the option should correspond to the number of columns in the input file.
 
-When the `headers` option is not set, and no any header names are recognized fo some reason, headers like sequential numbers with leading zeros are used
+When the `headers` option is not set, and no any header names are recognized for some reason, headers like sequential numbers with leading zeros are used
 in the following importing steps: "0001", "0002", "0003", ...
 
 Please differ the `headers` option here which determines heafer names, from the
@@ -169,12 +170,12 @@ John,Smith
 
 The following records will be recognized depending on the `headers` option and `headers` attribute of the `parameters` option:
 
-`headers`               |`parameters.headers`|result records
-------------------------------------------------------------
-not set                 |  not set (or true) | [{"name": "John", "surname": "Smith"}]
-not set                 |  false             | [{"0001": "name": "0002": "surname"}, {"0001": "John", "0002": "Smith"}]
-["Column1", "Column2"]  |  not set (or true) | [{"Column1": "John", "Column2": "Smith"}]
-["Column1", "Column2"]  |  false             | [{"Column1": "name": "Column2": "surname"}, {"Column1": "John", "Column2": "Smith"}]
+`headers`               |`parameters.headers`  |result records
+------------------------|----------------------|----------------
+*not set*               | *not set* (or `true`)| `[{"name": "John", "surname": "Smith"}]`
+*not set*               | `false`              | `[{"0001": "name": "0002": "surname"}, {"0001": "John", "0002": "Smith"}]`
+`["Column1", "Column2"]`| *not set* (or `true`)| `[{"Column1": "John", "Column2": "Smith"}]`
+`["Column1", "Column2"]`| `false`              | `[{"Column1": "name": "Column2": "surname"}, {"Column1": "John", "Column2": "Smith"}]`
 
 ### Reflecting values
 
@@ -240,8 +241,9 @@ to the *reflection function* name, and assumes that the data contains a column h
 equal to the field name (see the `name` reflection in the example above).
 
 Alternatively, *reflection option* may have a form of the subsection, having the following structure:
-    - `function` key determines a *reflection function* name
-    - `parameters` key determines a subsection of additional reflection function parameters
+
+- `function` key determines a *reflection function* name
+- `parameters` key determines a subsection of additional reflection function parameters
 
 A default *reflection function* is `direct`, it is used if the field is not listed in the
 `reflections` section (the same reflection function is assigned for the `name` reflection
@@ -250,9 +252,10 @@ in the example above explicitly).
 When the data row is got, all reflection functions are called, and returned values are collected.
 
 The returned values may be used in two stages:
-    - create - an instance is created or updated from these values using `update_or_create()` function call
-    - update - every value collected for this stage is assigned to the correspondent
-      instance attribute, and after the all, the instance is saved again
+
+- create - an instance is created or updated from these values using `update_or_create()` function call
+- update - every value collected for this stage is assigned to the correspondent
+  instance attribute, and after the all, the instance is saved again
 
 Every *reflection function* returns data for create and update stages separately.
 
@@ -260,28 +263,41 @@ The most *reflection functions* return data for the create stage. The update sta
 existence of the instance is important, for some custom field types for example.
 
 List of core reflection functions:
-    - `direct` - sends data column value directly to the field on the instance create stage, optional parameters:
-        - `column` - name of the data column to get a value, field name by defalut
-    - `update` - sends data column value to the field on the instance update stage, optional parameters:
-        - `column` - name of the data column to get a value, field name by defalut
-    - `constant` - sends a constant value to the field on the instance create stage, optional parameters:
-        - `value` - value to be sent, None by default
-    - `avoid` - forces ignore of the field by it's name, avoiding a default direct reflection
-    - `clean` - sends data column value to the field on the instance create stage, cleaning it
-      by the field clean method, optional parameters:
-        - `column` - name of the data column to get a value, field name by defalut
-    - `substr` - sends substring of the data column value to the field on the instance create stage, optional parameters:
-        - `column` - name of the data column to get a value, field name by defalut
-        - `start` - start index in the string, 0 by default
-        - `length` - maximal number of characters to get from the value, max_length attribute
-          of the field by default
-    - `format` - sends a formatted value collected from the data row to the field on the instance create stage, optional parameters:
-        - `format` - %-style format to create a value from the dictionary of data with column names as keys
-    - `xformat` - sends a formatted value collected from the data row to the field on the instance create stage, optional parameters:
-        - `format` - {}-style format to create a value from the dictionary of data with column names as keys
-    - `enum` - sends a enum value accordingly to the mapping from data value to the field value, optional parameters:
-        - `column` - column name where to find a value, field name by default
-        - `mapping` - column-to-field value mapping (column value as a key)
+
+- `direct` - sends data column value directly to the field on the instance create stage, parameters:
+    - `column` - name of the data column to get a value, field name by defalut
+- `update` - sends data column value to the field on the instance update stage, parameters:
+    - `column` - name of the data column to get a value, field name by defalut
+- `constant` - sends a constant value to the field on the instance create stage, parameters:
+    - `value` - value to be sent, None by default
+- `avoid` - forces ignore of the field by it's name, avoiding a default direct reflection
+- `clean` - sends data column value to the field on the instance create stage, cleaning it
+  by the field clean method, parameters:
+    - `column` - name of the data column to get a value, field name by defalut
+- `substr` - sends substring of the data column value to the field on the instance create stage, parameters:
+    - `column` - name of the data column to get a value, field name by defalut
+    - `start` - start index in the string, 0 by default
+    - `length` - maximal number of characters to get from the value, max_length attribute
+      of the field by default
+- `replace` - sends a value from the data column with `search` value replaced by the `replace` value, parameters:
+    - `column` - column name where to find a value, field name by default
+    - `search` - substring to be searched
+    - `replace` - value to replace
+    - `count` - number of occurences to replace, all by default
+- `format` - sends a formatted value collected from the data row to the field on the instance create stage, parameters:
+    - `format` - %-style format to create a value from the dictionary of data with column names as keys
+- `xformat` - sends a formatted value collected from the data row to the field on the instance create stage, parameters:
+    - `format` - {}-style format to create a value from the dictionary of data with column names as keys
+- `enum` - sends a enum value accordingly to the mapping from data value to the field value, parameters:
+    - `column` - column name where to find a value, field name by default
+    - `mapping` - column-to-field value mapping (column value as a key)
+- `combine` - applies several reflections sequentially, parameters:
+    - `reflections` - a list of reflections to be applied
+- `lookup` - lookups the column value in the `lookup_field` on the opposite side of the reference, parameters:
+    - `column` - column name where to find a value, field name by default
+    - `lookup_field` - field name of the opposide side model with the optional lookup suffix, 'pk' by default
+
+You can see the detailed help with the actual list of all registered reflections at the change page of the `ImportJob` instance.
 
 ### Identify instances
 

@@ -143,7 +143,7 @@ available parameters:
 
 def reflection_replace(context, model, field_name, data, log, column=None, search=None, replace=None, count=None):
     """
-`replace` reflection gets a value from the data column with `search` value replaces by the `replace` value.
+`replace` reflection gets a value from the data column with `search` value replaced by the `replace` value.
 
 available parameters:
 
