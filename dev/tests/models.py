@@ -1,14 +1,7 @@
 from django.db import models
-from django.core.exceptions import AppRegistryNotReady
 from django.conf import settings
-from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
-from django.utils.functional import LazyObject
-from django.utils.module_loading import import_string
-from django.contrib.contenttypes.models import ContentType
-from django.conf import settings
-from copy import deepcopy
-import re
+
 
 class ImportExample(models.Model):
     """ Import Example """

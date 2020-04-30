@@ -34,15 +34,16 @@ Every reflection returns data for create and update stages separately.
 from functools import partial
 
 from django.utils.translation import ugettext_lazy as _
-from django.core.exceptions import ValidationError, FieldDoesNotExist
+from django.core.exceptions import FieldDoesNotExist
+
 
 def _get_field(model, field_name):
     """Internal helper to get the model field"""
     try:
         return model._meta.get_field(field_name)
     except FieldDoesNotExist:
-        log.warning(_('Field name has not been found: %s'), field_name)
-    return None
+        return None
+
 
 def reflection_direct(context, model, field_name, data, log, column=None):
     """
@@ -57,10 +58,11 @@ available parameters:
         return {}, {}
     if column is None:
         column = field_name
-    if not column in data:
+    if column not in data:
         return {}, {}
     value = data.get(column)
     return {field_name: value}, {}
+
 
 def reflection_update(context, model, field_name, data, log, column=None):
     """
@@ -73,6 +75,7 @@ available parameters:
     create, update = reflection_direct(context, model, field_name, data, log, column=column)
     update.update(create)
     return update, {}
+
 
 def reflection_constant(context, model, field_name, data, log, value=None):
     """
@@ -87,6 +90,7 @@ available parameters:
         return {}, {}
     return {field_name: value}, {}
 
+
 def reflection_avoid(*av, **kw):
     """
 `avoid` reflection excludes the field from the import, to
@@ -96,6 +100,7 @@ equal to the field name.
 Any additional parameters are avoided also.
     """
     return {}, {}
+
 
 def reflection_clean(context, model, field_name, data, log, column=None):
     """
@@ -114,6 +119,7 @@ available parameters:
         return {}, {}
     value = field.clean(list(create.values())[0], model)
     return {field_name: value}, {}
+
 
 def reflection_substr(context, model, field_name, data, log, column=None, start=0, length=None):
     """
@@ -140,6 +146,7 @@ available parameters:
     value = list(create.values())[0]
     value = value[start: start + length]
     return {field_name: value}, {}
+
 
 def reflection_replace(context, model, field_name, data, log, column=None, search=None, replace=None, count=None):
     """
@@ -170,6 +177,7 @@ available parameters:
         value = value.replace(search, replace)
     return {field_name: value}, {}
 
+
 def reflection_format(context, model, field_name, data, log, format='<format not set>'):
     """
 `format` reflection creates the field value using %-style formatting from the whole data dict
@@ -184,6 +192,7 @@ available parameters:
     value = format % data
     return {field_name: value}, {}
 
+
 def reflection_xformat(context, model, field_name, data, log, format='<format not set>'):
     """
 `xformat` reflection creates the field value using {}-style formatting from the whole data dict
@@ -197,6 +206,7 @@ available parameters:
         return {}, {}
     value = format.format(data)
     return {field_name: value}, {}
+
 
 def reflection_enum(context, model, field_name, data, log, column=None, mapping={}):
     """
@@ -221,6 +231,7 @@ available parameters:
         return {}, {}
     value = mapping[value]
     return {field_name: value}, {}
+
 
 def reflection_combine(context, model, field_name, data, log, reflections=[]):
     """
@@ -255,6 +266,7 @@ available parameters:
         data.update(c)
         data.update(u)
     return c, u
+
 
 def reflection_lookup(context, model, field_name, data, log, column=None, lookup_field='pk'):
     """

@@ -1,19 +1,14 @@
-from datetime import datetime
-from django import forms
 from django.utils.safestring import mark_safe
-from django.db import models
 from django.db.models import F, Value
 from django.db.models.functions import Concat
-from django.conf import settings
 from django.contrib import admin
 from django.contrib.admin import ModelAdmin, StackedInline
 from django.contrib.contenttypes.models import ContentType
-from django import forms
 
 import markdown
-from markdown.extensions import extra, smarty
 
 from .models import ImportJob, ImportLog, get_options
+
 
 class ImportLogInline(StackedInline):
     readonly_fields = [
@@ -27,6 +22,7 @@ class ImportLogInline(StackedInline):
     def has_add_permission(request, *av, **kw):
         return False
 
+
 @admin.register(ImportJob)
 class ImportJobAdmin(ModelAdmin):
     fields = [
@@ -38,7 +34,7 @@ class ImportJobAdmin(ModelAdmin):
     readonly_fields = [
         "extra_help"
     ]
-    list_display = ["upload_file", "model"]
+    list_display = ["id", "model", "upload_file"]
 
     inlines = [
         ImportLogInline
@@ -62,8 +58,8 @@ class ImportJobAdmin(ModelAdmin):
             for r in reflections.__dict__:
                 func = getattr(reflections, r, None)
                 if func and callable(func) and func.__name__.startswith('reflection_'):
-                    help += '\n### %s\n%s' % (func.__name__.split('_',1)[1], func.__doc__)
-            help = markdown.markdown(help, extensions=['extra', 'smarty', 'sane_lists', 'attr_list', 'md_in_html'], output='html5')
+                    help += '\n### %s\n%s' % (func.__name__.split('_', 1)[1], func.__doc__)
+            help = markdown.markdown(help, extensions=['extra', 'smarty', 'sane_lists', 'attr_list'], output='html5')
             help = help.replace('<ul>', '<ul style="margin-left:20px;">').replace('<li>', '<li style="list-style-type: square;">')
         except Exception as ex:
             help = str(ex)

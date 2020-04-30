@@ -1,4 +1,7 @@
-from .settings import *
+from .settings import *  # noqa
+
+import os
+from .settings import BASE_DIR
 
 DJANGO_IMPORT = {
     'storage': {

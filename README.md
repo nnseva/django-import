@@ -8,14 +8,12 @@ The following options are present:
 - customizing project-wide storage settings to store imported files
 - import any model present in the project
 - restricting project-wide list of models available to import
-- wide range of input file formats with online autodetecting feature (with help of [tablib](https://tablib.readthedocs.io/) package)
+- wide range of input file formats (with help of [pandas](https://pandas.pydata.org/docs/reference/io.html) package)
 - online customizing column-to-field reflection
 - wide and extendable set of conversion and checking functions for imported values
 
 The idea of the package has been *inspired* by the [django-csvimport](https://github.com/edcrewe/django-csvimport) package which unfortunately was
 too hard to modify because of very long history.
-
-Big *thanx* to [tablib](https://tablib.readthedocs.io/) package authors for easy-to-use and poweful feature.
 
 ## Installation
 
@@ -29,15 +27,6 @@ pip install django-import
 *Last development version* from the GitHub source version control system
 ```
 pip install git+git://github.com/nnseva/django-import.git
-```
-
-*Note* that the [Django Import](https://github.com/nnseva/django-import) package itself depends on the only core [tablib](https://tablib.readthedocs.io/) package.
-
-If you need the *extended set of import formats*, install all or separate extensions of the [tablib](https://tablib.readthedocs.io/) package
-as described in the package documentation, f.e.
-
-```
-pip install tablib[all]
 ```
 
 *Note* that the [Django Import](https://github.com/nnseva/django-import) package itself doesn't depend on the [Celery](http://www.celeryproject.org/) project.
@@ -72,8 +61,8 @@ Every time when you create or update the `ImportJob`, the import procedure is st
 
 If you don't provide any options for the `ImportJob`, the import procedure will:
 
-- try to autodetect proper format and file opening flags (`rb` or `rt`)
-- import all data and headers from the file
+- open and read file using passed `mode`, or `rb` if not set
+- import all data and headers from the file using the passed `format`, or `csv` if not set
 - search columns in the input file corresponding to the field names
 - create model instances filling the instance field values by the data found in the correspondent input data columns
 
@@ -104,37 +93,12 @@ to import the file unchanged without explicit mode parameter.
 ```json
 {
     ...
-    "parameters": {
-        "format": "csv"
-    }
+    "format": "csv"
     ...
 }
 ```
 
-The `format` attribute of the `parameters` option is used to *skip* autodetection step totally and evaluate the next step
-immediately. You can set the `format` value to any available format known to the [tablib](https://tablib.readthedocs.io/) package.
-
-Note that many formats are absent in the core [tablib](https://tablib.readthedocs.io/) package, and available only when the extended
-format packages are [installed](#installation).
-
-### Skip headers
-
-`options` attribute value like:
-```json
-{
-    ...
-    "parameters": {
-        "headers": false
-    }
-    ...
-}
-```
-
-Such a `headers` attribute of the `parameters` option tells to skip headers recognition in the file and forces to not setup headers.
-You can use it solely, or together with the following `headers` option.
-
-Please differ the `headers` attribute of the `parameters` option described here, which abandons header names recognition,
-from the `headers` option described below.
+You can set the `format` value to any appropriate suffix for the [`pandas.read_*`](https://pandas.pydata.org/docs/reference/io.html) function.
 
 ### Force header names
 
@@ -156,26 +120,6 @@ This `headers` option overrides header names. Note that number of headers in the
 
 When the `headers` option is not set, and no any header names are recognized for some reason, headers like sequential numbers with leading zeros are used
 in the following importing steps: "0001", "0002", "0003", ...
-
-Please differ the `headers` option here which determines heafer names, from the
-`headers` attribute of the `parameters` option, which abandons header names recognition from the file.
-
-For example.
-
-Let's the input file looks like:
-```
-name,surname
-John,Smith
-```
-
-The following records will be recognized depending on the `headers` option and `headers` attribute of the `parameters` option:
-
-`headers`               |`parameters.headers`  |result records
-------------------------|----------------------|----------------
-*not set*               | *not set* (or `true`)| `[{"name": "John", "surname": "Smith"}]`
-*not set*               | `false`              | `[{"0001": "name": "0002": "surname"}, {"0001": "John", "0002": "Smith"}]`
-`["Column1", "Column2"]`| *not set* (or `true`)| `[{"Column1": "John", "Column2": "Smith"}]`
-`["Column1", "Column2"]`| `false`              | `[{"Column1": "name": "Column2": "surname"}, {"Column1": "John", "Column2": "Smith"}]`
 
 ### Reflecting values
 

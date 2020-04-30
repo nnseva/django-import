@@ -1,9 +1,11 @@
 from . import reflections
 
+
 class Reflector(object):
     """
     Arbitrary context for the import process when evaluating reflections
     """
+
 
 def register_reflection(name, func):
     """

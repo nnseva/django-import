@@ -12,7 +12,7 @@ sys.path.insert(0, os.path.dirname(BASE_DIR))
 # set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'tests.cettings')
 
-from django.conf import settings
+from django.conf import settings  # noqa
 
 app = Celery('django_import')
 

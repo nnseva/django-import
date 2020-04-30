@@ -1,5 +1,4 @@
 from django.db import models
-from django.core.exceptions import AppRegistryNotReady
 from django.conf import settings
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
@@ -7,8 +6,6 @@ from django.utils import timezone
 from django.utils.functional import LazyObject
 from django.utils.module_loading import import_string
 from django.contrib.contenttypes.models import ContentType
-from django.conf import settings
-from copy import deepcopy
 import re
 
 from jsoneditor.fields.django_extensions_jsonfield import JSONField
@@ -44,6 +41,7 @@ def get_options():
     options.update(getattr(settings, 'DJANGO_IMPORT', {}))
     return options
 
+
 def get_file_storage_class():
     """
     Function returning a class as a file storage class.
@@ -74,21 +72,21 @@ file.
 The `options` attribute has the complex structure to setup
 various custom import options.
 
-+ `parameters` section determines parameters to be sent as additional
-    parameters to the [`tablib.import_set`](https://tablib.readthedocs.io/en/stable/api/#tablib.import_set)
+- `format` is a format to be imported. It selects one of pandas module functions to be
+    used for import. Available values can be got from the pandas documentation as a list of `read_*`
+    functions, like `table`, `csv`, `fwf`, `excel`, `json`, or any other reading function returning
+    a `DataFrame`, read [pandas documentation](https://pandas.pydata.org/docs/reference/io.html)
 
-+ if there is no `parameters.format` value, the [`tablib.detect_format`](https://tablib.readthedocs.io/en/stable/api/#tablib.detect_format)
-    is called to try to determine the format
+- `parameters` section determines parameters to be sent as additional
+    parameters to the reading function. Check [pandas documentation](https://pandas.pydata.org/docs/reference/io.html)
+    to see what additional parameters may or should be sent there
 
-+ the `parameters.headers` is a boolean value determining, whether the
-    the tablib will try to extract headers from the file
-
-+ the `mode` determines file open mode when the file is got from the storage;
+- the `mode` determines file open mode when the file is got from the storage;
     the only two, `rb` (read binary) and `rt` (read text) modes are supported;
     *note* that some custom storages don't support proper mode changing options
 
-+ the `headers` determines a list of headers which should be assigned to
-    data columns. Existent heades if present, are avoided. Length of the
+- the `headers` determines a list of headers which should be assigned to
+    data columns. Existent heades if present, are replaced. Length of the
     `headers` list should be equal to number of data columns
 
 + `identity` is a list of field column names which are used to determine identity
@@ -116,6 +114,7 @@ various custom import options.
         upload_to=get_options()['storage']['upload_to'], storage=Storage(),
         verbose_name=_('Upload File'),
     )
+
     def __str__(self):
         return '%(upload_file)s->%(model)s' % {
             'upload_file': self.upload_file,
@@ -137,6 +136,7 @@ various custom import options.
         else:
             from .import_task import run_import
             run_import(log.id)
+
 
 class ImportLog(models.Model):
     job = models.ForeignKey(
