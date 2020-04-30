@@ -1,4 +1,4 @@
-[![Build Status](https://api.travis-ci.com/nnseva/django-import.svg?branch=master)](https://api.travis-ci.com/nnseva/django-import)
+[![Build Status](https://api.travis-ci.com/nnseva/django-import.svg?branch=master)](https://travis-ci.com/github/nnseva/django-import)
 
 
 
