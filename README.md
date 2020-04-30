@@ -1,3 +1,7 @@
+[![Build Status](https://api.travis-ci.com/nnseva/django-import.svg?branch=master)](https://api.travis-ci.com/nnseva/django-import)
+
+
+
 # Django Import
 
 The [Django Import](https://github.com/nnseva/django-import) package provides a rich Django models import feature for the admin interface as well as using any API.
