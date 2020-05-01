@@ -102,7 +102,7 @@ to import the file unchanged without explicit mode parameter.
 }
 ```
 
-You can set the `format` value to any appropriate suffix for the [`pandas.read_*`](https://pandas.pydata.org/docs/reference/io.html) function.
+You can set the `format` value to any appropriate suffix for the [`pandas.read_*`](https://pandas.pydata.org/docs/reference/io.html) function. Tested examples are `csv` with different formatting (using additional parameters), and `excel` - for `xls` and `xlsx` files. Note that you can use additional parameters to select a sheet from the excel file to import.
 
 ### Force header names
 
