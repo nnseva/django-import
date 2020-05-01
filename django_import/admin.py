@@ -1,3 +1,4 @@
+from django.apps import apps
 from django.utils.safestring import mark_safe
 from django.db.models import F, Value
 from django.db.models.functions import Concat
@@ -45,10 +46,15 @@ class ImportJobAdmin(ModelAdmin):
             queryset = ContentType.objects.all().annotate(full_name=Concat(F('app_label'), Value('.'), F('model')))
             options = get_options()
             if not options.get('models', []):
-                queryset = queryset.exclude(full_name__in=[x.lower() for x in options.get('except', [])])
+                models = ['%s.%s' % (m._meta.app_label, m._meta.model_name) for m in apps.get_models()]
+                queryset = queryset.filter(
+                    full_name__in=models
+                ).exclude(
+                    full_name__in=[x.lower() for x in options.get('except', [])]
+                )
             else:
                 queryset = queryset.filter(full_name__in=[m.lower() for m in options.get('models', [])])
-            kwargs['queryset'] = queryset
+            kwargs['queryset'] = queryset.order_by('model')
         return super(ImportJobAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
     def extra_help(self, *av, **kw):
