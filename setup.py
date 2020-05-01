@@ -31,7 +31,7 @@ setup(
     ],
     keywords="CSV JSON TSV import django fixture",
     license='LGPL',
-    packages=["django_import"],
+    packages=["django_import", "django_import.migrations"],
     include_package_data=True,
     zip_safe=False,
     install_requires=[
