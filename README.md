@@ -291,3 +291,113 @@ You can check whether the procedure is finished using a special `is_finished` fl
 
 *Note* that as minimum one [Celery](http://www.celeryproject.org/) Worker process should be started
 in order to start asynchronous import procedure. If no Workers are started, the import procedure will never finished.
+
+## Models list allowed to import
+
+Two keys containing lists in settings, `models` and `except` mean, what models are allowed to import.
+
+If `models` key is not empty, only those models, which are included into this list, are allowed.
+
+`settings.py`
+```python
+DJANGO_IMPORT = {
+    ...
+    "models": [
+       'accounting.Debit',
+       'accounting.Credit',
+       'accounting.Orders',
+       'accounting.Accounts',
+       ...
+    ],
+    "except": []
+    ...
+}
+```
+
+Else, the `except` key enlists models which are forbidden to import using this packet. All models except enlisted are allowed to import in this case.
+
+`settings.py`
+```python
+DJANGO_IMPORT = {
+    ...
+    "models": [],
+    "except": [
+       'contenttypes.ContentType',
+       'admin.LogEntry',
+       'auth.Permission',
+       'sessions.Session',
+       'django_import.ImportJob',
+       'django_import.ImportLog',
+       ...
+    ]
+    ...
+}
+```
+
+## Setting up storage configuration to store files to be imported
+
+Storage configuration is configured using the `storage` key.
+
+The `class` key is used to setup a storage class.
+
+The `settings` key is used to setup keyword parameters to call the storage instance constructor.
+
+The `upload_to` key is used to setup `upload_to` keyword parameter of the `ImportJob.upload_file` field.
+
+There is a sample of the custom storage settings for the package below:
+
+`settings.py`
+```python
+DJANGO_IMPORT = {
+    ...
+    'storage': {
+        'class': 'storages.backends.s3boto3.S3Boto3Storage',
+        'settings': {
+            'access_key': PROJECT_AWS_ACCESS_KEY_ID,
+            'secret_key': PROJECT_AWS_SECRET_ACCESS_KEY,
+            'bucket_name': PROJECT_AWS_STORAGE_BUCKET_NAME,
+            'querystring_auth': PROJECT_AWS_QUERYSTRING_AUTH,
+            'use_ssl': PROJECT_AWS_S3_USE_SSL,
+            'default_acl': PROJECT_AWS_DEFAULT_ACL,
+            'location': PROJECT_AWS_LOCATION,
+            'custom_domain': PROJECT_AWS_S3_CUSTOM_DOMAIN,
+        },
+        'upload_to': 'imports',
+    ...
+}
+```
+
+## Default options
+
+The default settings are the folowing:
+
+```python
+DJANGO_IMPORT = {
+    'storage': {
+        'class': 'django.core.files.storage.FileSystemStorage',
+        'settings': {
+            'location': '',
+        },
+        'upload_to': 'uploads',
+    },
+    'models': [],
+    'except': [
+        'contenttypes.ContentType',
+        'admin.LogEntry',
+        'auth.Permission',
+        'sessions.Session',
+        'django_import.ImportJob',
+        'django_import.ImportLog',
+    ],
+    'sync': True,
+}
+```
+
+Note that the default options are united with the custom options from the `settings.py` file to get the actual value, like:
+
+```python
+options = {
+    **default_options,
+    **custom_options
+}
+```
