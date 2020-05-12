@@ -269,7 +269,9 @@ instance.
 Any existent model fields may be included into this identity list. But note that only those of them which are really imported
 will be used for the instance identification in the particular import procedure.
 
-## Asynchronous import procedure
+## Settings
+
+### Asynchronous import procedure
 
 The import procedure is started synchronously by default. It also can be started asynchronously
 in the separate [Celery](http://www.celeryproject.org/) worker,
@@ -292,7 +294,7 @@ You can check whether the procedure is finished using a special `is_finished` fl
 *Note* that as minimum one [Celery](http://www.celeryproject.org/) Worker process should be started
 in order to start asynchronous import procedure. If no Workers are started, the import procedure will never finished.
 
-## Models list allowed to import
+### Models list allowed to import
 
 Two keys containing lists in settings, `models` and `except` mean, what models are allowed to import.
 
@@ -334,7 +336,7 @@ DJANGO_IMPORT = {
 }
 ```
 
-## Setting up storage configuration to store files to be imported
+### Setting up storage configuration to store files to be imported
 
 Storage configuration is configured using the `storage` key.
 
@@ -367,7 +369,7 @@ DJANGO_IMPORT = {
 }
 ```
 
-## Default options
+### Default settings
 
 The default settings are the folowing:
 
@@ -399,5 +401,299 @@ Note that the default options are united with the custom options from the `setti
 options = {
     **default_options,
     **custom_options
+}
+```
+
+## Import examples
+
+### Prerequisites
+
+We would like to import files into the model ImportModel which has the following structure:
+
+```python
+class ImportExample(models.Model):
+    """ Import Example """
+
+    name = models.CharField(
+        max_length=128,
+        verbose_name=_('Name'),
+    )
+    quantity = models.IntegerField(
+        null=True, blank=True,
+        verbose_name=_('Quantity'),
+    )
+    weight = models.FloatField(
+        null=True, blank=True,
+        verbose_name=_('Weight'),
+    )
+    price = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        null=True, blank=True,
+        verbose_name=_('Price'),
+    )
+    kind = models.CharField(
+        max_length=32,
+        choices=[
+            ('wood', _('Wood')),
+            ('steel', _('Steel')),
+            ('oil', _('Oil')),
+        ],
+        verbose_name=_('Kind'),
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='examples',
+        null=True, blank=True,
+        verbose_name=_('User'),
+        help_text=_('User who regards to this example'),
+    )
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = _('Import Example')
+        verbose_name_plural = _('Import Examples')
+```
+
+We also will assume that we have (as minimum) two users in the User model with usernames `u1` and `u2`.
+
+The `Import Example` model exists in the `tests` application of the package if you have cloned it locally using:
+
+```bash
+git clone git@github.com:nnseva/django-import.git
+```
+
+or download from the repository https://github.com/nnseva/django-import/archive/master.zip and unpack it.
+
+The package itself should be installed as described at the top here.
+
+Just go to the `dev` subdirectory and start the following sequentially:
+
+```
+python manage.py migrate
+python manage.py createsuperuser
+python manage.py runserver
+```
+
+Input superuser name and password, and see the WEB admin interface on the `http:127.0.0.1:8000/admin/` URL.
+
+### Try a simplest import
+
+Let we have a CSV file like this (you will find it in the `dev/tests/data` directory).
+
+```csv
+"name","quantity","weight","price","type","user"
+"etewrt",123,10.3,11.11,S,"u1"
+"cvbncv",112,54.333,34.12,W,"u2"
+```
+
+Create an `ImportJob` instance without options, select `ImportExample` model, upload the file and try to save it.
+
+You will see the following log in the import log:
+
+```
+2020-05-12 08:29:49.712041+00:00: [INFO(4)] Starting import for: uploads/test_WyIyugj.csv
+2020-05-12 08:29:50.051297+00:00: [INFO(4)] Trying to import uploads/test_WyIyugj.csv
+2020-05-12 08:29:50.068780+00:00: [INFO(4)] Import file has been recognized, 6 columns, 2 rows: uploads/test_WyIyugj.csv
+2020-05-12 08:29:50.071130+00:00: [ERROR(2)] Unexpected error: Cannot assign "'u1'": "ImportExample.user" must be a "User" instance.
+2020-05-12 08:29:50.071589+00:00: [INFO(4)] Finished
+```
+
+The `ERROR` string means that we can not import for some reason, which is explained in this line: the `user` column is a user reference, and import package doesn't know, how to import it.
+
+### Avoid importing unnecessary fields
+
+Let we exclude a `user` column a while to make import possible. You can find an `avoid` reflection in the help page below the record which does exactly what we need now.
+
+Change view of the `options` field from the `Tree` to the `Code` and input:
+
+```json
+{
+  "reflections": {
+    "user": "avoid"
+  }
+}
+```
+
+then press "Save and continue editing" button at the bottom.
+
+You will find a new import log record at the bottom with the following log text:
+
+```
+2020-05-12 09:02:23.176985+00:00: [INFO(4)] Starting import for: uploads/test_WyIyugj.csv
+2020-05-12 09:02:23.178720+00:00: [INFO(4)] Trying to import uploads/test_WyIyugj.csv
+2020-05-12 09:02:23.182253+00:00: [INFO(4)] Import file has been recognized, 6 columns, 2 rows: uploads/test_WyIyugj.csv
+2020-05-12 09:02:23.184719+00:00: [INFO(4)] Import has been processed, 2 rows successfully imported
+2020-05-12 09:02:23.185278+00:00: [INFO(4)] Finished
+```
+
+The text `Import has been processed, 2 rows successfully imported` means that all 2 records are successfully imported.
+
+You can ensure it looking to the `Import Example` instance list of the admin.
+
+### Import columns with the `choices` option
+
+We can see that neither `user` (which has been avoided), nor `kind` column have been imported.
+
+Looking into the model, we can see that the `kind` column has a choice selector. Let we convert the `type` CSV column to the `kind` model field. Searching in the help on the admin page, we can see a `enum` reflection which does what we would like to have.
+
+```json
+{
+  "reflections": {
+    "user": "avoid",
+    "kind": {
+        "function": "enum",
+        "parameters": {
+            "column": "type",
+            "mapping": {
+                "S": "steel",
+                "W": "wood",
+                "O": "oil"
+            }
+        }
+    }
+  }
+}
+```
+
+After saving the job, we can see success log. Check the imported instances. We can see, that instances have been imported successfully, but duplicated.
+
+### Avoid duplication on the repeated import
+
+Remove all imported instances of the `Import Example` model. We should avoid such a problem in a future, the `identity` option will help us to do it. Change options appropriately:
+
+```json
+{
+  "reflections": {
+    "user": "avoid",
+    "kind": {
+        "function": "enum",
+        "parameters": {
+            "column": "type",
+            "mapping": {
+                "S": "steel",
+                "W": "wood",
+                "O": "oil"
+            }
+        }
+    }
+  },
+  "identity": [ "name" ]
+}
+```
+
+### Delete unnecessary logs
+
+You can also notice that there are too many log records in the interface. Just select every of them using the flag `Delete` on the right side of every such a record.
+
+Then we will save the `Import Job` and see what happens.
+
+The import happens successfully, all import log entries have been deleted, and a new one created with the log of the last import.
+
+Let we save the job again and check the `Import Example` admin page. We will see that no any additional records are added, so the `identity` option helps us as we expected.
+
+### Import a reference field
+
+Now it's a time to make a reference to the user in the imported records. We will replace the `avoid` reflection by the special `lookup` reflection which does what we would like to have.
+
+```json
+{
+  "reflections": {
+    "user": {
+      "function": "lookup",
+      "parameters": {
+        "lookup_field": "username"
+      }
+    },
+    "kind": {
+        "function": "enum",
+        "parameters": {
+            "column": "type",
+            "mapping": {
+                "S": "steel",
+                "W": "wood",
+                "O": "oil"
+            }
+        }
+    }
+  },
+  "identity": [ "name" ]
+}
+```
+
+### Import unusual format
+
+Let we have a different format of the CSV, like the `Excel` application produces if the Russian localization is a default in the system (you will find an example in the `dev/tests/data/test-ru.csv` file).
+
+```CSV
+"name";"quantity";"weight";"price";"type";"user"
+"etewrt";123;10,3;11,11;S;"u1"
+"cvbncv";112;54,333;34,12;W;"u2"
+```
+
+We can pass explicit CSV convertor parameters to the conversion function (all available parameters for the CSV conversion are on the [pandas page](https://pandas.pydata.org/docs/reference/api/pandas.read_csv.html):
+
+```json
+{
+  "reflections": {
+    "user": {
+      "function": "lookup",
+      "parameters": {
+        "lookup_field": "username"
+      }
+    },
+    "kind": {
+        "function": "enum",
+        "parameters": {
+            "column": "type",
+            "mapping": {
+                "S": "steel",
+                "W": "wood",
+                "O": "oil"
+            }
+        }
+    }
+  },
+  "identity": [ "name" ],
+  "format": "csv",
+  "parameters": {
+    "sep": ";",
+    "decimal": ","
+  }
+}
+```
+
+Delete all previously imported records and save the job again. You will see that all records are imported successfully.
+
+### Import an excel file
+
+You can import the `Excel` file directly (the example is present in the `/dev/tests/data/test.xls` file). Upload a file and use the appropriate format in the options:
+
+```json
+{
+  "reflections": {
+    "user": {
+      "function": "lookup",
+      "parameters": {
+        "lookup_field": "username"
+      }
+    },
+    "kind": {
+        "function": "enum",
+        "parameters": {
+            "column": "type",
+            "mapping": {
+                "S": "steel",
+                "W": "wood",
+                "O": "oil"
+            }
+        }
+    }
+  },
+  "identity": [ "name" ],
+  "format": "excel"
 }
 ```
