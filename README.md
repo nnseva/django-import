@@ -478,7 +478,7 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
-Input superuser name and password, and see the WEB admin interface on the `http:127.0.0.1:8000/admin/` URL.
+Input superuser name and password, and see the WEB admin interface on the `http://127.0.0.1:8000/admin/` URL.
 
 ### Try a simplest import
 
