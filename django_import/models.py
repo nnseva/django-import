@@ -1,45 +1,16 @@
-from django.db import models
-from django.conf import settings
-from django.utils.safestring import mark_safe
-from django.utils.translation import ugettext_lazy as _
-from django.utils import timezone
-from django.utils.functional import LazyObject
-from django.utils.module_loading import import_string
-from django.contrib.contenttypes.models import ContentType
 import re
 
 from jsoneditor.fields.django_extensions_jsonfield import JSONField
 
-DJANGO_IMPORT = {
-    'storage': {
-        'class': 'django.core.files.storage.FileSystemStorage',
-        'settings': {
-            'location': '',
-        },
-        'upload_to': 'uploads',
-    },
-    'models': [],
-    'except': [
-        'contenttypes.ContentType',
-        'admin.LogEntry',
-        'auth.Permission',
-        'sessions.Session',
-        'django_import.ImportJob',
-        'django_import.ImportLog',
-    ],
-    'sync': True,
-}
+from django.contrib.contenttypes.models import ContentType
+from django.db import models
+from django.utils import timezone
+from django.utils.functional import LazyObject
+from django.utils.module_loading import import_string
+from django.utils.safestring import mark_safe
+from django.utils.translation import ugettext_lazy as _
 
-
-def get_options():
-    """
-    Returns options from the settings.DJANGO_IMPORT,
-    or default values
-    """
-    options = {}
-    options.update(DJANGO_IMPORT)
-    options.update(getattr(settings, 'DJANGO_IMPORT', {}))
-    return options
+from .config import get_options
 
 
 def get_file_storage_class():

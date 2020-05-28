@@ -1,12 +1,12 @@
+import markdown
+
 from django.apps import apps
-from django.utils.safestring import mark_safe
-from django.db.models import F, Value
-from django.db.models.functions import Concat
 from django.contrib import admin
 from django.contrib.admin import ModelAdmin, StackedInline
 from django.contrib.contenttypes.models import ContentType
-
-import markdown
+from django.db.models import F, Value
+from django.db.models.functions import Concat
+from django.utils.safestring import mark_safe
 
 from .models import ImportJob, ImportLog, get_options
 

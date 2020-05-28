@@ -5,6 +5,7 @@ except ImportError:
 
 from django_import.version import __version__ as version
 
+
 with open("README.rst", "r") as fp:
     description = fp.read() + "\n"
 

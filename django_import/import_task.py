@@ -1,13 +1,13 @@
-import pandas
-
-from six import string_types
 from functools import partial
 
+import pandas
+from six import string_types
+
+from django.db import DatabaseError, transaction
 from django.utils.translation import ugettext_lazy as _
-from django.db import transaction
-from django.db import DatabaseError
 
 from . import reflections as reflect
+from .config import get_options
 from .reflector import Reflector
 
 
@@ -93,6 +93,7 @@ def try_import(log):
         }
     cnt = 0
     skipped = 0
+    rows_report = get_options()['rows_report']
     for ind, data in [(row[0], dict(zip(dataset.columns, row[1]))) for row in dataset.iterrows()]:
         create, update = {}, {}
         try:
@@ -127,4 +128,6 @@ def try_import(log):
             log.error(_("Database error while importing data: create %r, update %r, %s"), create, update, ex)
             continue
         cnt += 1
-    log.info(_('Import has been processed, %s rows successfully imported'), cnt)
+        if cnt % rows_report == 0:
+            log.info(_('... %s rows successfully imported ...'), cnt)
+    log.info(_('Import has been finished, %s rows successfully imported'), cnt)
