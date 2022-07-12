@@ -425,3 +425,112 @@ class ModuleTest(TestCase):
         self.assertEqual(ImportExample.objects.all().count(), 3)
         examples = set([e.name for e in ImportExample.objects.all()])
         self.assertEqual(examples, set(['cvbncv', 'etewrt', 'name']))
+
+    def test_010_avoid_reflection(self):
+        """Test `avoid` reflection"""
+        options = {
+            "format": "csv",
+            "parameters": {
+                "delimiter": ";"
+            },
+            "mode": "rt",
+            "reflections": {
+                "name": {
+                    "function": "substr",
+                    "parameters": {
+                        "start": 0,
+                        "length": 3
+                    }
+                },
+                "user": {
+                    "parameters": {
+                        "lookup_field": "username"
+                    },
+                    "function": "lookup"
+                },
+                "weight": "avoid",
+                "price": "avoid",
+                "kind": {
+                    "function": "enum",
+                    "parameters": {
+                        "column": "type",
+                        "mapping": {
+                            "S": "steel",
+                            "W": "wood",
+                            "O": "oil"
+                        }
+                    }
+                }
+            },
+            "identity": [
+                "name"
+            ]
+        }
+        with open(os.path.join(settings.BASE_DIR, 'tests/data/test-ru.csv'), 'rb') as test_file:
+            meta = ImportExample._meta
+            ct = ContentType.objects.get_by_natural_key(meta.app_label, meta.model_name)
+            job = ImportJob.objects.create(upload_file=File(test_file, name='test-ru.csv'), model=ct, options=options)
+        self.assertEqual(job.logs.all().count(), 1)
+        log = job.logs.all()[0]
+        self.assertEqual(log.is_finished, True)
+        self.assertEqual(ImportExample.objects.all().count(), 2, log.import_log)
+        examples = dict([(e.name, dict([(f.name, getattr(e, f.name)) for f in e._meta.get_fields() if f.name != 'id'])) for e in ImportExample.objects.all()])
+        self.assertEqual(examples, dict([
+            ('cvb', {'name': 'cvb', 'quantity': 112, 'weight': None, 'price': None, 'kind': 'wood', 'user': self.u2}),
+            ('ete', {'name': 'ete', 'quantity': 123, 'weight': None, 'price': None, 'kind': 'steel', 'user': self.u1}),
+        ]))
+
+    def test_011_update_reflection(self):
+        """Test `update` reflection with property"""
+        options = {
+            "format": "csv",
+            "parameters": {
+                "delimiter": ";"
+            },
+            "mode": "rt",
+            "reflections": {
+                "name": {
+                    "function": "substr",
+                    "parameters": {
+                        "start": 0,
+                        "length": 3
+                    }
+                },
+                "user": "avoid",
+                "user_name": {
+                    "function": "update",
+                    "parameters": {
+                        "column": "user"
+                    }
+                },
+                "weight": "avoid",
+                "price": "avoid",
+                "kind": {
+                    "function": "enum",
+                    "parameters": {
+                        "column": "type",
+                        "mapping": {
+                            "S": "steel",
+                            "W": "wood",
+                            "O": "oil"
+                        }
+                    }
+                }
+            },
+            "identity": [
+                "name"
+            ]
+        }
+        with open(os.path.join(settings.BASE_DIR, 'tests/data/test-ru.csv'), 'rb') as test_file:
+            meta = ImportExample._meta
+            ct = ContentType.objects.get_by_natural_key(meta.app_label, meta.model_name)
+            job = ImportJob.objects.create(upload_file=File(test_file, name='test-ru.csv'), model=ct, options=options)
+        self.assertEqual(job.logs.all().count(), 1)
+        log = job.logs.all()[0]
+        self.assertEqual(log.is_finished, True)
+        self.assertEqual(ImportExample.objects.all().count(), 2, log.import_log)
+        examples = dict([(e.name, dict([(f.name, getattr(e, f.name)) for f in e._meta.get_fields() if f.name != 'id'])) for e in ImportExample.objects.all()])
+        self.assertEqual(examples, dict([
+            ('cvb', {'name': 'cvb', 'quantity': 112, 'weight': None, 'price': None, 'kind': 'wood', 'user': self.u2}),
+            ('ete', {'name': 'ete', 'quantity': 123, 'weight': None, 'price': None, 'kind': 'steel', 'user': self.u1}),
+        ]))

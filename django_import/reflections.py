@@ -70,9 +70,7 @@ available parameters:
 - column - column name where to find a value, field name by default
     """
     create, update = reflection_direct(context, model, field_name, data, log, column=column)
-    print("???????????", create, update)
     update.update(create)
-    print(">>>>>>>>>>>>", update)
     return {}, update
 
 

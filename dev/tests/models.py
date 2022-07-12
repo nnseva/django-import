@@ -42,6 +42,14 @@ class ImportExample(models.Model):
         help_text=_('User who regards to this example'),
     )
 
+    def _set_user_name(self, value):
+        self.user = self._meta.get_field('user').related_model.objects.filter(username=value).first()
+
+    user_name = property(
+        lambda self: self.user.username if self.user else None,
+        _set_user_name
+    )
+
     def __str__(self):
         return self.name
 
