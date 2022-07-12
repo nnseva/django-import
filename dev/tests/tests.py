@@ -1,6 +1,8 @@
 from __future__ import absolute_import, print_function
 
 import os
+import sys
+import unittest
 from decimal import Decimal
 
 from django_import.models import ImportJob
@@ -55,11 +57,11 @@ class ModuleTest(TestCase):
         with open(os.path.join(settings.BASE_DIR, 'tests/data/test.csv'), 'rb') as test_file:
             meta = ImportExample._meta
             ct = ContentType.objects.get_by_natural_key(meta.app_label, meta.model_name)
-            job = ImportJob.objects.create(upload_file=File(test_file), model=ct, options=options)
+            job = ImportJob.objects.create(upload_file=File(test_file, name='test.csv'), model=ct, options=options)
         self.assertEqual(job.logs.all().count(), 1)
         log = job.logs.all()[0]
         self.assertEqual(log.is_finished, True)
-        self.assertEqual(ImportExample.objects.all().count(), 2)
+        self.assertEqual(ImportExample.objects.all().count(), 2, log.import_log)
         examples = dict([(e.name, dict([(f.name, getattr(e, f.name)) for f in e._meta.get_fields() if f.name != 'id'])) for e in ImportExample.objects.all()])
         self.assertEqual(examples, dict([
             ('cvbncv', {'name': 'cvbncv', 'quantity': 112, 'weight': 54.333, 'price': Decimal('34.12'), 'kind': 'wood', 'user': self.u2}),
@@ -95,11 +97,11 @@ class ModuleTest(TestCase):
         with open(os.path.join(settings.BASE_DIR, 'tests/data/test.csv'), 'rb') as test_file:
             meta = ImportExample._meta
             ct = ContentType.objects.get_by_natural_key(meta.app_label, meta.model_name)
-            job = ImportJob.objects.create(upload_file=File(test_file), model=ct, options=options)
+            job = ImportJob.objects.create(upload_file=File(test_file, name='test.csv'), model=ct, options=options)
         self.assertEqual(job.logs.all().count(), 1)
         log = job.logs.all()[0]
         self.assertEqual(log.is_finished, True)
-        self.assertEqual(ImportExample.objects.all().count(), 2)
+        self.assertEqual(ImportExample.objects.all().count(), 2, log.import_log)
         examples = dict([(e.name, dict([(f.name, getattr(e, f.name)) for f in e._meta.get_fields() if f.name != 'id'])) for e in ImportExample.objects.all()])
         self.assertEqual(examples, dict([
             ('cvbncv', {'name': 'cvbncv', 'quantity': 112, 'weight': 54.333, 'price': Decimal('34.12'), 'kind': 'wood', 'user': self.u2}),
@@ -141,11 +143,11 @@ class ModuleTest(TestCase):
         with open(os.path.join(settings.BASE_DIR, 'tests/data/test.csv'), 'rb') as test_file:
             meta = ImportExample._meta
             ct = ContentType.objects.get_by_natural_key(meta.app_label, meta.model_name)
-            job = ImportJob.objects.create(upload_file=File(test_file), model=ct, options=options)
+            job = ImportJob.objects.create(upload_file=File(test_file, name='test.csv'), model=ct, options=options)
         self.assertEqual(job.logs.all().count(), 1)
         log = job.logs.all()[0]
         self.assertEqual(log.is_finished, True)
-        self.assertEqual(ImportExample.objects.all().count(), 2)
+        self.assertEqual(ImportExample.objects.all().count(), 2, log.import_log)
         examples = dict([(e.name, dict([(f.name, getattr(e, f.name)) for f in e._meta.get_fields() if f.name != 'id'])) for e in ImportExample.objects.all()])
         self.assertEqual(examples, dict([
             ('cvbncv', {'name': 'cvbncv', 'quantity': 112, 'weight': 54.333, 'price': Decimal('34.12'), 'kind': 'wood', 'user': self.u2}),
@@ -235,11 +237,11 @@ class ModuleTest(TestCase):
         with open(os.path.join(settings.BASE_DIR, 'tests/data/test-ru.csv'), 'rb') as test_file:
             meta = ImportExample._meta
             ct = ContentType.objects.get_by_natural_key(meta.app_label, meta.model_name)
-            job = ImportJob.objects.create(upload_file=File(test_file), model=ct, options=options)
+            job = ImportJob.objects.create(upload_file=File(test_file, name='test-ru.csv'), model=ct, options=options)
         self.assertEqual(job.logs.all().count(), 1)
         log = job.logs.all()[0]
         self.assertEqual(log.is_finished, True)
-        self.assertEqual(ImportExample.objects.all().count(), 2)
+        self.assertEqual(ImportExample.objects.all().count(), 2, log.import_log)
         examples = dict([(e.name, dict([(f.name, getattr(e, f.name)) for f in e._meta.get_fields() if f.name != 'id'])) for e in ImportExample.objects.all()])
         self.assertEqual(examples, dict([
             ('cvb', {'name': 'cvb', 'quantity': 112, 'weight': 54.333, 'price': Decimal('34.12'), 'kind': 'wood', 'user': self.u2}),
@@ -276,17 +278,18 @@ class ModuleTest(TestCase):
         with open(os.path.join(settings.BASE_DIR, 'tests/data/test.xls'), 'rb') as test_file:
             meta = ImportExample._meta
             ct = ContentType.objects.get_by_natural_key(meta.app_label, meta.model_name)
-            job = ImportJob.objects.create(upload_file=File(test_file), model=ct, options=options)
+            job = ImportJob.objects.create(upload_file=File(test_file, name='test.xls'), model=ct, options=options)
         self.assertEqual(job.logs.all().count(), 1)
         log = job.logs.all()[0]
         self.assertEqual(log.is_finished, True)
-        self.assertEqual(ImportExample.objects.all().count(), 2)
+        self.assertEqual(ImportExample.objects.all().count(), 2, log.import_log)
         examples = dict([(e.name, dict([(f.name, getattr(e, f.name)) for f in e._meta.get_fields() if f.name != 'id'])) for e in ImportExample.objects.all()])
         self.assertEqual(examples, dict([
             ('cvbncv', {'name': 'cvbncv', 'quantity': 112, 'weight': 54.333, 'price': Decimal('34.12'), 'kind': 'wood', 'user': self.u2}),
             ('etewrt', {'name': 'etewrt', 'quantity': 123, 'weight': 10.3, 'price': Decimal('11.11'), 'kind': 'steel', 'user': self.u1}),
         ]))
 
+    @unittest.skipIf(sys.version_info < (3, 8), "pandas with python<3 doesn't support xlsx")
     def test_006_xlsx_import(self):
         """Test the XLSX import example"""
         options = {
@@ -317,17 +320,18 @@ class ModuleTest(TestCase):
         with open(os.path.join(settings.BASE_DIR, 'tests/data/test.xlsx'), 'rb') as test_file:
             meta = ImportExample._meta
             ct = ContentType.objects.get_by_natural_key(meta.app_label, meta.model_name)
-            job = ImportJob.objects.create(upload_file=File(test_file), model=ct, options=options)
+            job = ImportJob.objects.create(upload_file=File(test_file, name='test.xlsx'), model=ct, options=options)
         self.assertEqual(job.logs.all().count(), 1)
         log = job.logs.all()[0]
         self.assertEqual(log.is_finished, True)
-        self.assertEqual(ImportExample.objects.all().count(), 2)
+        self.assertEqual(ImportExample.objects.all().count(), 2, log.import_log)
         examples = dict([(e.name, dict([(f.name, getattr(e, f.name)) for f in e._meta.get_fields() if f.name != 'id'])) for e in ImportExample.objects.all()])
         self.assertEqual(examples, dict([
             ('cvbncv', {'name': 'cvbncv', 'quantity': 112, 'weight': 54.333, 'price': Decimal('34.12'), 'kind': 'wood', 'user': self.u2}),
             ('etewrt', {'name': 'etewrt', 'quantity': 123, 'weight': 10.3, 'price': Decimal('11.11'), 'kind': 'steel', 'user': self.u1}),
         ]))
 
+    @unittest.skipIf(sys.version_info < (3, 8), "pandas with python<3 doesn't support xlsx")
     def test_007_odf_xlsx_import(self):
         """Test the ODF XLSX import example"""
         options = {
@@ -358,11 +362,11 @@ class ModuleTest(TestCase):
         with open(os.path.join(settings.BASE_DIR, 'tests/data/test-odf.xlsx'), 'rb') as test_file:
             meta = ImportExample._meta
             ct = ContentType.objects.get_by_natural_key(meta.app_label, meta.model_name)
-            job = ImportJob.objects.create(upload_file=File(test_file), model=ct, options=options)
+            job = ImportJob.objects.create(upload_file=File(test_file, name='test-odf.xlsx'), model=ct, options=options)
         self.assertEqual(job.logs.all().count(), 1)
         log = job.logs.all()[0]
         self.assertEqual(log.is_finished, True)
-        self.assertEqual(ImportExample.objects.all().count(), 2)
+        self.assertEqual(ImportExample.objects.all().count(), 2, log.import_log)
         examples = dict([(e.name, dict([(f.name, getattr(e, f.name)) for f in e._meta.get_fields() if f.name != 'id'])) for e in ImportExample.objects.all()])
         self.assertEqual(examples, dict([
             ('cvbncv', {'name': 'cvbncv', 'quantity': 112, 'weight': 54.333, 'price': Decimal('34.12'), 'kind': 'wood', 'user': self.u2}),
@@ -390,7 +394,7 @@ class ModuleTest(TestCase):
         with open(os.path.join(settings.BASE_DIR, 'tests/data/test.csv'), 'rb') as test_file:
             meta = ImportExample._meta
             ct = ContentType.objects.get_by_natural_key(meta.app_label, meta.model_name)
-            job = ImportJob.objects.create(upload_file=File(test_file), model=ct, options=options)
+            job = ImportJob.objects.create(upload_file=File(test_file, name='test.csv'), model=ct, options=options)
         self.assertEqual(job.logs.all().count(), 1)
         log = job.logs.all()[0]
         self.assertEqual(log.is_finished, True)
@@ -414,7 +418,7 @@ class ModuleTest(TestCase):
         with open(os.path.join(settings.BASE_DIR, 'tests/data/test.csv'), 'rb') as test_file:
             meta = ImportExample._meta
             ct = ContentType.objects.get_by_natural_key(meta.app_label, meta.model_name)
-            job = ImportJob.objects.create(upload_file=File(test_file), model=ct, options=options)
+            job = ImportJob.objects.create(upload_file=File(test_file, name='test.csv'), model=ct, options=options)
         self.assertEqual(job.logs.all().count(), 1)
         log = job.logs.all()[0]
         self.assertEqual(log.is_finished, True)

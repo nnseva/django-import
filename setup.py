@@ -25,9 +25,12 @@ setup(
         'Framework :: Django :: 2.1',
         'Framework :: Django :: 2.2',
         'Framework :: Django :: 3.0',
+        'Framework :: Django :: 3.1',
+        'Framework :: Django :: 3.2',
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
         'License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)',
     ],
     keywords="CSV JSON TSV import django fixture",
@@ -42,6 +45,7 @@ setup(
         "django-extensions",
         "markdown",
         "six",
+        "openpyxl",
         "xlrd>=1.0.0"
     ],
 )

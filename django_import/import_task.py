@@ -74,8 +74,8 @@ def try_import(log):
     model = job.model.model_class()
     convertors = {}
     reflector = Reflector()
-    for f in model._meta.get_fields():
-        reflection = reflections.get(f.name, 'direct')
+    for f_name in set(reflections.keys()).union(f.name for f in model._meta.fields):
+        reflection = reflections.get(f_name, 'direct')
         if isinstance(reflection, string_types):
             reflection = {
                 'function': reflection
@@ -87,7 +87,7 @@ def try_import(log):
         if not reflection_function:
             log.warning(_('Reflection function %s has not been registered, ignored'), reflection['function'])
             continue
-        convertors[f.name] = {
+        convertors[f_name] = {
             'function': reflection_function,
             'parameters': reflection.get('parameters', {})
         }

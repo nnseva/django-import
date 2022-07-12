@@ -53,9 +53,6 @@ available parameters:
 
 - column - column name where to find a value, field name by default
     """
-    field = _get_field(model, field_name)
-    if not field:
-        return {}, {}
     if column is None:
         column = field_name
     if column not in data:
@@ -73,8 +70,10 @@ available parameters:
 - column - column name where to find a value, field name by default
     """
     create, update = reflection_direct(context, model, field_name, data, log, column=column)
+    print("???????????", create, update)
     update.update(create)
-    return update, {}
+    print(">>>>>>>>>>>>", update)
+    return {}, update
 
 
 def reflection_constant(context, model, field_name, data, log, value=None):
@@ -85,9 +84,6 @@ available parameters:
 
 - value - value to be set
     """
-    field = _get_field(model, field_name)
-    if not field:
-        return {}, {}
     return {field_name: value}, {}
 
 
@@ -133,8 +129,6 @@ available parameters:
   of the field by default
     """
     field = _get_field(model, field_name)
-    if not field:
-        return {}, {}
     if length is None:
         length = getattr(field, 'max_length', 0)
         if not length:
@@ -159,9 +153,6 @@ available parameters:
 - replace - value to replace
 - count - number of occurences to replace, all by default
     """
-    field = _get_field(model, field_name)
-    if not field:
-        return {}, {}
     if search is None:
         log.warning(_('Set the search value: %s'), field_name)
         return {}, {}
@@ -186,9 +177,6 @@ available parameters:
 
 - format - %-style format to create a value from the dict with columns
     """
-    field = _get_field(model, field_name)
-    if not field:
-        return {}, {}
     value = format % data
     return {field_name: value}, {}
 
@@ -201,9 +189,6 @@ available parameters:
 
 - format - {}-style format to create a value from the dict with columns
     """
-    field = _get_field(model, field_name)
-    if not field:
-        return {}, {}
     value = format.format(data)
     return {field_name: value}, {}
 
@@ -218,10 +203,6 @@ available parameters:
 - column - column name where to find a value, field name by default
 - mapping - column-to-field value mapping (column value as a key)
     """
-    field = _get_field(model, field_name)
-    if not field:
-        return {}, {}
-
     create, update = reflection_direct(context, model, field_name, data, log, column=column)
     if not create:
         return {}, {}
@@ -245,9 +226,6 @@ available parameters:
 
 - reflections - a list of reflections to be applied
     """
-    field = _get_field(model, field_name)
-    if not field:
-        return {}, {}
     for r in reflections:
         if isinstance(r, str):
             r = {'function': r}
