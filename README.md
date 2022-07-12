@@ -124,6 +124,7 @@ This `headers` option overrides header names. Note that number of headers in the
 
 When the `headers` option is not set, and no any header names are recognized for some reason, headers like sequential numbers with leading zeros are used
 in the following importing steps: "0001", "0002", "0003", ...
+model
 
 ### Reflecting values
 
@@ -212,9 +213,9 @@ existence of the instance is important, for some custom field types for example.
 
 List of core reflection functions:
 
-- `direct` - sends data column value directly to the field on the instance create stage, parameters:
+- `direct` - sends data column value directly to the field on the instance *create* stage, parameters:
     - `column` - name of the data column to get a value, field name by defalut
-- `update` - sends data column value to the field on the instance update stage, parameters:
+- `update` - sends data column value to the field on the instance *update* stage. This reflection, as a rule, is used to update instance attributes which are not fields really, f.e. properties, or some custom fields. Parameters:
     - `column` - name of the data column to get a value, field name by defalut
 - `constant` - sends a constant value to the field on the instance create stage, parameters:
     - `value` - value to be sent, None by default
@@ -246,6 +247,23 @@ List of core reflection functions:
     - `lookup_field` - field name of the opposide side model with the optional lookup suffix, 'pk' by default
 
 You can see the detailed help with the actual list of all registered reflections at the change page of the `ImportJob` instance.
+
+### Customizing a field list to be imported
+
+The field list to be imported is determined as a union of two name sets:
+- a model field names set
+- a reflection names set
+
+Every Django model determines a list of fields. Every such field has a name. The package tries to import all fields found in the model.
+
+The import options contain a set of reflections [see before](#reflecting-values), with unique names. Every such a name also determines a model field or property which should be imported.
+
+The reflection whose name is equal to the model field name, determines a reflection for this field.
+
+The default import column name is equal to the field name.
+
+When the import file contains a column whose name is equal to the field name, it is imported even the reflection is not declared. To avoid such an import, use the special `avoid` reflection with the name equal to the column name.
+
 
 ### Identify instances
 
