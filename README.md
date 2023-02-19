@@ -1,6 +1,4 @@
-[![Build Status](https://api.travis-ci.com/nnseva/django-import.svg?branch=master)](https://travis-ci.com/github/nnseva/django-import)
-
-
+[![Tests](https://github.com/nnseva/django-import/actions/workflows/test.yml/badge.svg)](https://github.com/nnseva/django-import/actions/workflows/test.yml)
 
 # Django Import
 
@@ -75,7 +73,7 @@ Every of these steps is customizable.
 ### Set the opening mode explicitly
 
 `options` attribute value:
-```json
+```js
 {
     ...
     "mode": "rt",
@@ -94,7 +92,7 @@ to import the file unchanged without explicit mode parameter.
 ### Set the format explicitly
 
 `options` attribute value:
-```json
+```js
 {
     ...
     "format": "csv"
@@ -107,7 +105,7 @@ You can set the `format` value to any appropriate suffix for the [`pandas.read_*
 ### Force header names
 
 `options` attribute value:
-```json
+```js
 {
     ...
     "headers": [
@@ -132,7 +130,7 @@ The most poweful option of the import procedure is customizing where and how the
 
 This customization is called *reflection* and appears in the `reflections` section of the `options` job attribute:
 
-```json
+```js
 {
     ...
     "reflections": {
@@ -268,7 +266,7 @@ When the import file contains a column whose name is equal to the field name, it
 ### Identify instances
 
 `options` attribute value:
-```json
+```js
 {
     ...
     "identity": [
@@ -528,7 +526,7 @@ Let we exclude a `user` column a while to make import possible. You can find an 
 
 Change view of the `options` field from the `Tree` to the `Code` and input:
 
-```json
+```js
 {
   "reflections": {
     "user": "avoid"
@@ -558,7 +556,7 @@ We can see that neither `user` (which has been avoided), nor `kind` column have 
 
 Looking into the model, we can see that the `kind` column has a choice selector. Let we convert the `type` CSV column to the `kind` model field. Searching in the help on the admin page, we can see a `enum` reflection which does what we would like to have.
 
-```json
+```js
 {
   "reflections": {
     "user": "avoid",
@@ -583,7 +581,7 @@ After saving the job, we can see success log. Check the imported instances. We c
 
 Remove all imported instances of the `Import Example` model. We should avoid such a problem in a future, the `identity` option will help us to do it. Change options appropriately:
 
-```json
+```js
 {
   "reflections": {
     "user": "avoid",
@@ -617,7 +615,7 @@ Let we save the job again and check the `Import Example` admin page. We will see
 
 Now it's a time to make a reference to the user in the imported records. We will replace the `avoid` reflection by the special `lookup` reflection which does what we would like to have.
 
-```json
+```js
 {
   "reflections": {
     "user": {
@@ -654,7 +652,7 @@ Let we have a different format of the CSV, like the `Excel` application produces
 
 We can pass explicit CSV convertor parameters to the conversion function (all available parameters for the CSV conversion are on the [pandas page](https://pandas.pydata.org/docs/reference/api/pandas.read_csv.html):
 
-```json
+```js
 {
   "reflections": {
     "user": {
@@ -690,7 +688,7 @@ Delete all previously imported records and save the job again. You will see that
 
 You can import the `Excel` file directly (the example is present in the `/dev/tests/data/test.xls` file). Upload a file and use the appropriate format in the options:
 
-```json
+```js
 {
   "reflections": {
     "user": {
