@@ -34,7 +34,12 @@ Every reflection returns data for create and update stages separately.
 from functools import partial
 
 from django.core.exceptions import FieldDoesNotExist
-from django.utils.translation import ugettext_lazy as _
+
+
+try:
+    from django.utils.translation import ugettext_lazy as _
+except ImportError:
+    from django.utils.translation import gettext_lazy as _
 
 
 def _get_field(model, field_name):

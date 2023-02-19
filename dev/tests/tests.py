@@ -5,7 +5,6 @@ import sys
 import unittest
 from decimal import Decimal
 
-from django_import.models import ImportJob
 from tests.models import ImportExample
 
 from django.conf import settings
@@ -13,6 +12,8 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.files import File
 from django.test import TestCase
+
+from django_import.models import ImportJob
 
 
 class ModuleTest(TestCase):

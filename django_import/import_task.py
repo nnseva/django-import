@@ -4,7 +4,12 @@ import pandas
 from six import string_types
 
 from django.db import DatabaseError, transaction
-from django.utils.translation import ugettext_lazy as _
+
+
+try:
+    from django.utils.translation import ugettext_lazy as _
+except ImportError:
+    from django.utils.translation import gettext_lazy as _
 
 from . import reflections as reflect
 from .config import get_options

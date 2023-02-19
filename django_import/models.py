@@ -8,7 +8,12 @@ from django.utils import timezone
 from django.utils.functional import LazyObject
 from django.utils.module_loading import import_string
 from django.utils.safestring import mark_safe
-from django.utils.translation import ugettext_lazy as _
+
+
+try:
+    from django.utils.translation import ugettext_lazy as _
+except ImportError:
+    from django.utils.translation import gettext_lazy as _
 
 from .config import get_options
 
